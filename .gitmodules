@@ -1,0 +1,3 @@
+[submodule "PFE-Rapport"]
+	path = PFE-Rapport
+	url = git@github.com:lnadal-s/PFE-Rapport.git
