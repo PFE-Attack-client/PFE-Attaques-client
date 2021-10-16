@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+    server:
+      build: ./my-vuln-app/server
+      ports:
+        - "3000"
+      volumes:
+        - ./my-vuln-app/server:/server
+      entrypoint: ["tail", "-f", "/dev/null"]

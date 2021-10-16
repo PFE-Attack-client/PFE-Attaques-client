@@ -1,0 +1,22 @@
+version '3.8'
+
+services:
+  bdd: 
+    build: ./my-vuld-app/bdd
+    ports:
+    networks:
+  server:
+    build: ./my-vuld-app/server
+    ports:
+    networks:
+    depends_on:
+      - bdd
+    restart:
+      - on-failure
+  client:
+    build: ./my-vuld-app/client
+    ports:
+    networks:
+    depends_on:
+      - server
+    restart: on-failure

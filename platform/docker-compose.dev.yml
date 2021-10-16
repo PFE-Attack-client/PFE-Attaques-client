@@ -1,0 +1,28 @@
+version '3.8'
+
+services:
+  bdd: 
+    build: ./my-vuld-app/bdd
+    ports:
+      - "3636"
+    volumes:
+      - ./my-vuld-app/server:/db
+  server:
+    build: ./my-vuld-app/server
+    ports:
+      - "3000"
+    volumes:
+      - ./my-vuld-app/server:/server
+    depends_on:
+      - bdd
+    restart:
+      - on-failure
+  client:
+    build: ./my-vuld-app/client
+    ports:
+     - "8080:80"
+    volumes:
+    - ./my-vuld-app/server:/client
+    depends_on:
+      - server
+    restart: on-failure
