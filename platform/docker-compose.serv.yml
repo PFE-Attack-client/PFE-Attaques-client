@@ -1,10 +1,22 @@
 version: '3'
 
+networks:
+    my-vuln-app-network:
+        external: true
+
 services:
     server:
       build: ./my-vuln-app/server
       ports:
-        - "3000"
+        - "8181"
       volumes:
         - ./my-vuln-app/server:/server
       entrypoint: ["tail", "-f", "/dev/null"]
+      networks:
+       - my-vuln-app-network
+    db:
+      build: ./my-vuln-app/bdd
+      ports:
+        - "3636"
+      networks:
+        - my-vuln-app-network
