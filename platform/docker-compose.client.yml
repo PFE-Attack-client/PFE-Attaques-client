@@ -1,0 +1,16 @@
+version: '3'
+
+networks:
+    my-vuln-app-network:
+        external: true
+
+services:
+    client:
+      build: ./my-vuln-app/client
+      ports:
+        - "8080"
+      volumes:
+        - ./my-vuln-app/client:/client
+      entrypoint: ["tail", "-f", "/dev/null"]
+      networks:
+       - my-vuln-app-network
