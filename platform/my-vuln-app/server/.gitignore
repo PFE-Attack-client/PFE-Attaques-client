@@ -1,1 +1,6 @@
 __pycache__
+*/__pycache__
+*/*/*/__pycache__
+*/*/__pycache__
+app/main/migrations
+app/test/.pytest_cache
