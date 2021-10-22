@@ -1,6 +1,9 @@
 FROM node:14-buster
 
-WORKDIR "/vuln-plateform"
+# WORKDIR "/../client/vuln-plateform"
 
-RUN npm install npm run dev &&\
-    npm run dev
+# COPY package*.json ./
+
+# RUN npm install -g
+
+# RUN npm run build
