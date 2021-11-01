@@ -1,5 +1,6 @@
 from flask import request
 from flask_restx import Namespace, fields, Resource
+from ..service.user_service import save_new_user, get_all_users, get_a_user
 
 api = Namespace('user', description='user related operations')
 user = api.model('user', {
@@ -21,3 +22,20 @@ class UserList(Resource):
         """Creates a new User """
         data = request.json
         return data
+
+
+@api.route('/signup')
+class UserSignup(Resource):
+    @api.marshal_list_with(user, envelope='data')
+    def get(
+        self):
+        pass
+    
+    @api.response(201, 'User successfully created.')
+    @api.doc('create a new user')
+    @api.expect(user, validate=True)
+    def post(self):
+        """Register a User in the database"""
+        data = request.json
+        print(request)
+        return save_new_user(data=data)
