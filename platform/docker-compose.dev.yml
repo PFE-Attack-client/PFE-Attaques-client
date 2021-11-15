@@ -1,28 +1,36 @@
-version '3.8'
+version: '3'
+
+networks:
+    my-vuln-app-network:
+        external: true
 
 services:
   bdd: 
-    build: ./my-vuld-app/bdd
+    build: ./my-vuln-app/bdd
     ports:
       - "3636"
-    volumes:
-      - ./my-vuld-app/server:/db
+    networks:
+      - my-vuln-app-network
+    cap_add:
+      - SYS_NICE
   server:
-    build: ./my-vuld-app/server
+    build: ./my-vuln-app/server
     ports:
       - "3000"
     volumes:
-      - ./my-vuld-app/server:/server
+      - ./my-vuln-app/server:/server
+    entrypoint: ["tail", "-f", "/dev/null"]
     depends_on:
       - bdd
-    restart:
-      - on-failure
+    restart: on-failure
   client:
-    build: ./my-vuld-app/client
+    build: ./my-vuln-app/client
     ports:
      - "8080:80"
     volumes:
-    - ./my-vuld-app/server:/client
+    - ./my-vuln-app/server:/client
     depends_on:
       - server
-    restart: on-failure
+    entrypoint: ["tail", "-f", "/dev/null"]
+    networks:
+      - my-vuln-app-network
