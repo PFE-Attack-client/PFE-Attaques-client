@@ -1,8 +1,9 @@
 from flask import request
 from flask_restx import Namespace, fields, Resource
+from ..service.article_service import save_new_commentary, get_all_articles, get_all_commentaries
 
 api = Namespace('article', description='Article related operations')
-user = api.model('article', {
+article = api.model('article', {
         'title': fields.String(required=True, description='article title'),
         'author': fields.String(required=True, description='article author'),
         'article_img': fields.String(required=True, description='article img link'),
@@ -13,12 +14,13 @@ user = api.model('article', {
 @api.doc()
 class ArticleList(Resource):
     def get(self):
-        pass
+        return get_all_articles()
 
-@api.route('/comment')
+@api.route('/<id>/comment/')
 class ArticleComment(Resource):
-    def get():
-        pass
+    def get(self, id):
+        return get_all_commentaries(id)
 
-    def post():
-        pass
+    def post(self, id):
+        data = request.json
+        return save_new_commentary(id , data)

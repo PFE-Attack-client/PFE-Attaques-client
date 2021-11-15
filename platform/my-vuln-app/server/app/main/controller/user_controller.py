@@ -17,18 +17,11 @@ class UserList(Resource):
         """List all registered users"""
         return True
 
-    @api.response(201, 'User successfully created.')
-    def post(self):
-        """Creates a new User """
-        data = request.json
-        return data
-
 
 @api.route('/signup')
 class UserSignup(Resource):
     @api.marshal_list_with(user, envelope='data')
-    def get(
-        self):
+    def get(self):
         pass
     
     @api.response(201, 'User successfully created.')
