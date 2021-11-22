@@ -22,6 +22,8 @@ services:
     entrypoint: ["tail", "-f", "/dev/null"]
     depends_on:
       - bdd
+    networks:
+      - my-vuln-app-network
     restart: on-failure
   client:
     build: ./my-vuln-app/client

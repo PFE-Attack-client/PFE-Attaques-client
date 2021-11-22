@@ -14,6 +14,7 @@ This API is being developed for a student project in Cybersecurity at @Telecom S
 ### Database init:
 Then run the following commands only the first time ever you launch it:
 ```
+    pip install -r requirements.txt
     python3 manage.py initdb
     python3 manage.py migratedb
     python3 manage.py upgradedb
