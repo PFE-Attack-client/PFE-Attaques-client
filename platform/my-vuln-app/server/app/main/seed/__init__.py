@@ -10,7 +10,7 @@ user1 = User(email="local@host.gouv", username="local", registered_on=datetime.d
 user2 = User(email="local2@host.gouv", username="local2", registered_on=datetime.datetime.utcnow(), password="kikou")
 
 article1 = Article(
-    title="how to hack your girlfriend's facebook account",
+    title="How to hack your girlfriend's facebook account",
     author="Jean-article",
     date=datetime.datetime.utcnow(),
     content="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcuIn enim justo, rhoncus ut, imperdiet a",
@@ -18,7 +18,7 @@ article1 = Article(
 )
 
 article2 = Article(
-    title="how to hack your bank account to add unlimited money",
+    title="How to hack your bank account to add unlimited money",
     author="Jean-article",
     date=datetime.datetime.utcnow(),
     content="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu In enim justo, rhoncus ut, imperdiet a",
