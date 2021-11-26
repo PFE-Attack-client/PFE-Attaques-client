@@ -1,0 +1,19 @@
+{
+    "scenario": 
+    {
+        "client": {
+            "csp": false,
+            "csp_directive": "img-src *",
+            "filtering": false,
+            "x_frame_options": false
+        },
+        "server": 
+        {
+            "example_key": "example_value"
+        },
+        "database":
+        {
+            "example_key": "example_value"
+        }
+    }
+}
