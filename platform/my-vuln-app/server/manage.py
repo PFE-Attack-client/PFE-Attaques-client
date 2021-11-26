@@ -77,7 +77,7 @@ def seeddb():
     """Fill the database with the initial seed"""
     app = create_app(os.getenv('BOILERPLATE_ENV') or 'dev')
     with app.app_context():
-        #seed_the_db()
+        seed_the_db()
         seed_commentaries()
 
 
