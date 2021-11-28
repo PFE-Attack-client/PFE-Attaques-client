@@ -6,7 +6,7 @@ import pathlib
 import sys
 
 ABSOLUTE_PATH = str(pathlib.Path(__file__).parent.resolve())
-PATH_SCENARIOS = "./scenarios/"
+PATH_SCENARIOS = ABSOLUTE_PATH + "/scenarios/"
 PATH_PLATFORM = ABSOLUTE_PATH + "/platform/my-vuln-app/"
 PATH_DOCKERFILE_DB = PATH_PLATFORM + "bdd/"
 PATH_DOCKERFILE_CLIENT = PATH_PLATFORM + "client/"
@@ -32,16 +32,17 @@ class Platform_manager:
         try:
             with open(config_file) as f:
                 self.config = json.load(f)
-                print(self.config)
-        except:
-            print(f"File {config_file} does not exist.")
+        except Exception as e:
+            print(f"File {config_file} can not be opened. Error:\n{e}")
+            sys.exit(1)
     
     def run(self):
         self.build_images()
-        self.create_networks()
         self.launch_database()
         self.launch_server()
         self.launch_client()
+        self.create_networks()
+        self.config_db()
         #self.kill_containers()
         #self.delete_networks()
 
@@ -59,7 +60,25 @@ class Platform_manager:
         print("-- Build -> done.")
 
     def create_networks(self):
-        self.app_network = client.networks.create(name=PREFIX_IMAGE + "_app_network" + SUFFIX_CONTAINER)
+        network_config = self.config['scenario']['network']
+        ipam_pool = docker.types.IPAMPool(
+            subnet= network_config['subnet'],
+            gateway= network_config['gateway']
+        )
+        ipam_config = docker.types.IPAMConfig(pool_configs=[ipam_pool])
+        self.app_network = client.networks.create(
+            name=PREFIX_IMAGE + "_app_network" + SUFFIX_CONTAINER,
+            ipam=ipam_config
+            )
+        self.app_network.connect(
+            container=self.client_container.name, 
+            ipv4_address=self.config['scenario']['client']['private_ipv4_address'])
+        self.app_network.connect(
+            container=self.server_container.name,
+        ipv4_address=self.config['scenario']['server']['private_ipv4_address'])
+        self.app_network.connect(
+            container=self.db_container.name,
+            ipv4_address=self.config['scenario']['database']['private_ipv4_address'])
     
     def delete_networks(self):
         print("Deleting used network...")
@@ -69,20 +88,22 @@ class Platform_manager:
     
     def launch_database(self):
         print("---- Launching database container ----")
+        env_vars = self.from_dic_to_env(self.config['scenario']['database'])
+
         self.db_container = client.containers.run(
             image=IMAGE_NAME_DB,
             detach=True,
             cap_add=["SYS_NICE"],
             hostname= PREFIX_IMAGE + "_database_" + SUFFIX_CONTAINER,
             name= PREFIX_IMAGE + "_database_" + SUFFIX_CONTAINER,
-            network=PREFIX_IMAGE + "_app_network"+ SUFFIX_CONTAINER,
+            environment= env_vars,
             remove=True
         )
         print(f"Database {self.db_container} is running!")
 
     def launch_server(self):
-        exit_code = 1
-        tries = 10
+        env_vars = self.from_dic_to_env(self.config['scenario']['server'])
+        env_vars.append("SERVER_NAME_DB=" + PREFIX_IMAGE + "_database_" + SUFFIX_CONTAINER)
 
         print("---- Launching Server container ----")
         self.server_container = client.containers.run(
@@ -90,13 +111,17 @@ class Platform_manager:
             detach = True,
             hostname = PREFIX_IMAGE + "_server_" + SUFFIX_CONTAINER,
             name = PREFIX_IMAGE + "_server_" + SUFFIX_CONTAINER,
-            network = PREFIX_IMAGE + "_app_network"+ SUFFIX_CONTAINER,
             remove = True,
-            environment = ["SERVER_NAME_DB=" + PREFIX_IMAGE + "_database_" + SUFFIX_CONTAINER],
+            environment = env_vars,
             volumes = [PATH_DOCKERFILE_SERVER + ":/server"],
             entrypoint = ["tail", "-f", "/dev/null"],
             ports = {"8181": 8181}
         )
+
+    def config_db(self):
+        exit_code = 1
+        tries = 10
+
         while exit_code != 0 and tries > 0:
             exit_code, _ = self.server_container.exec_run(cmd = "pip install -r /server/requirements.txt", stdin = True)
             exit_code, _ = self.server_container.exec_run(cmd = "python3 /server/manage.py initdb", stdin = True)
@@ -120,22 +145,32 @@ class Platform_manager:
 
     def launch_client(self):
         print("---- Launching Client container ----")
+        env_vars = self.from_dic_to_env(self.config['scenario']['client'])
+        env_vars.append("SERVER_IP_ADDRESS=" + self.config['scenario']['server']['private_ipv4_address'])
+        
         self.client_container = client.containers.run(
             image = IMAGE_NAME_CLIENT,
             detach = True,
             hostname = PREFIX_IMAGE + "_client_" + SUFFIX_CONTAINER,
             name = PREFIX_IMAGE + "_client_" + SUFFIX_CONTAINER,
-            network = PREFIX_IMAGE + "_app_network"+ SUFFIX_CONTAINER,
             remove = True,
             volumes = [PATH_DOCKERFILE_CLIENT+ ":/client"],
             entrypoint= ["tail", "-f", "/dev/null"],
-            ports = {"3000": 3000}
+            environment= env_vars,
+            ports = {'3000/tcp': ('127.0.0.1', '3000')}
         )
         exit_code, _ = self.client_container.exec_run(cmd = "npm install", workdir = "/client")
         exit_code, _ = self.client_container.exec_run(cmd = "npm run dev", workdir = "/client", detach=True)
 
         print(f"Client {self.client_container} is running!")
 
+    def from_dic_to_env(self, object):
+        env_list = []
+    
+        for key, value in object.items():
+            env_list.append(str(key).upper() + "=" + str(value))
+        return(env_list)
+    
     def kill_containers(self):
         self.db_container.kill()
         self.server_container.kill()

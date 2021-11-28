@@ -2,18 +2,29 @@
     "scenario": 
     {
         "client": {
-            "csp": false,
+            "csp": "false",
             "csp_directive": "img-src *",
-            "filtering": false,
-            "x_frame_options": false
+            "filtering": "false",
+            "x_frame_options": "false",
+            "running_port": 3000,
+            "mapping_port": 3000,
+            "private_ipv4_address": "10.0.0.2"
         },
         "server": 
         {
-            "example_key": "example_value"
+            "example_key": "example_value",
+            "running_port": 80,
+            "mapping_port": 8181,
+            "private_ipv4_address": "10.0.0.3"
         },
         "database":
         {
-            "example_key": "example_value"
+            "private_ipv4_address": "10.0.0.4"
+        },
+        "network":
+        {
+            "subnet": "10.0.0.0/24",
+            "gateway": "10.0.0.1"
         }
     }
 }
