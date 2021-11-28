@@ -115,7 +115,8 @@ class Platform_manager:
             environment = env_vars,
             volumes = [PATH_DOCKERFILE_SERVER + ":/server"],
             entrypoint = ["tail", "-f", "/dev/null"],
-            ports = {"8181": 8181}
+            ports = {
+                self.config['scenario']['server']['app_port']: self.config['scenario']['server']['mapping_port']}
         )
 
     def config_db(self):
@@ -133,6 +134,7 @@ class Platform_manager:
                 print("SUCCESS -> Database has been initialized.")
             elif tries == 0:
                 print("FAILURE -> Impossible to initialize the database")
+                print(_)
                 sys.exit(1)
             else :
                 print(f"ATTEMPT N{10 - tries} Fail while setting up the database\n-> Retrying...")
@@ -146,8 +148,8 @@ class Platform_manager:
     def launch_client(self):
         print("---- Launching Client container ----")
         env_vars = self.from_dic_to_env(self.config['scenario']['client'])
-        env_vars.append("SERVER_IP_ADDRESS=" + self.config['scenario']['server']['private_ipv4_address'])
-        
+        env_vars.append("VUE_APP_SERVER_IP_ADDRESS=" + self.config['scenario']['server']['private_ipv4_address'])
+
         self.client_container = client.containers.run(
             image = IMAGE_NAME_CLIENT,
             detach = True,
@@ -209,14 +211,13 @@ if __name__ == '__main__':
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-s", "--scenario", action="store_true", help="Launch a pre-existing scenario")
     group.add_argument("-f", "--config_file",  action="store_true", help="Launch a custom scenario")
-    group.add_argument("-c", "--clean", action="store_true", help="stop and clean docker related components")
+    parser.add_argument("-c", "--clean", action="store_true", help="stop and clean docker related components")
     parser.add_argument("name", type=str, help="the scenario/config name")
     args = parser.parse_args()
 
     if args.clean:
         manager = Platform_manager()
         manager.clean()
-        sys.exit(0)
     elif args.scenario:
         manager = Platform_manager(scenario_name=args.name)
     elif args.config_file:

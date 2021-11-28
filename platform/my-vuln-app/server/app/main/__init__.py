@@ -9,8 +9,14 @@ from .config.db import db_sqlAlchemy as db
 migrate = Migrate()
 flask_bcrypt = Bcrypt()
 
+app = Flask(__name__)
+
+@app.after_request
+def set_header(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
 def create_app(config_name):
-    app = Flask(__name__)
     print(f"[INIT] Creating app for {config_name} purpose.")
     app.config.from_object(config_by_name[config_name])
     db.init_app(app)
