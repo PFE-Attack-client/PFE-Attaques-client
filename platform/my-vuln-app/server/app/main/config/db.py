@@ -7,7 +7,7 @@ from sqlalchemy.sql import text
 username = 'my-vuln-app-user' #os.getenv('DB_ROOT')
 password = 'pw' #os.getenv('DB_ROOT_PASSWORD')
 userpass = 'mysql+pymysql://' + username + ':' + password + '@'
-server = 'platform_bdd_1/'
+server = str(os.getenv('SERVER_NAME_DB')) + "/"
 dbname = 'my-vuln-app-db' #os.getenv('DB')
 socket = '/var/run/mysqld/mysqld.sock'
 SQLALCHEMY_DATABASE_URI = userpass + server + dbname
