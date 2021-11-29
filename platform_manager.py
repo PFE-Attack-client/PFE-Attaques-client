@@ -42,9 +42,8 @@ class Platform_manager:
         self.launch_server()
         self.launch_client()
         self.create_networks()
-        self.config_db()
-        #self.kill_containers()
-        #self.delete_networks()
+        self.config_db(self.server_container)
+        self.init_server(self.server_container)
 
     def build_images(self):
         print("---- Building images ----")
@@ -119,16 +118,16 @@ class Platform_manager:
                 self.config['scenario']['server']['app_port']: self.config['scenario']['server']['mapping_port']}
         )
 
-    def config_db(self):
+    def config_db(self, server_container):
         exit_code = 1
         tries = 10
 
         while exit_code != 0 and tries > 0:
-            exit_code, _ = self.server_container.exec_run(cmd = "pip install -r /server/requirements.txt", stdin = True)
-            exit_code, _ = self.server_container.exec_run(cmd = "python3 /server/manage.py initdb", stdin = True)
-            exit_code, _ = self.server_container.exec_run(cmd = "python3 /server/manage.py migratedb", stdin = True)
-            exit_code, _ = self.server_container.exec_run(cmd = "python3 /server/manage.py upgradedb", stdin = True)
-            exit_code, _ = self.server_container.exec_run(cmd = "python3 /server/manage.py seeddb", stdin = True)
+            exit_code, _ = server_container.exec_run(cmd = "pip install -r /server/requirements.txt", stdin = True)
+            exit_code, _ = server_container.exec_run(cmd = "python3 /server/manage.py initdb", stdin = True)
+            exit_code, _ = server_container.exec_run(cmd = "python3 /server/manage.py migratedb", stdin = True)
+            exit_code, _ = server_container.exec_run(cmd = "python3 /server/manage.py upgradedb", stdin = True)
+            exit_code, _ = server_container.exec_run(cmd = "python3 /server/manage.py seeddb", stdin = True)
             tries = tries - 1
             if exit_code == 0:   
                 print("SUCCESS -> Database has been initialized.")
@@ -138,9 +137,11 @@ class Platform_manager:
                 sys.exit(1)
             else :
                 print(f"ATTEMPT N{10 - tries} Fail while setting up the database\n-> Retrying...")
-        exit_code, _ = self.server_container.exec_run(cmd = "python3 /server/manage.py run", detach=True)
+    
+    def init_server(self, server_container):
+        exit_code, _ = server_container.exec_run(cmd = "python3 /server/manage.py run", detach=True)
         if exit_code != 1:
-            print(f"Server {self.server_container} is running!")
+            print(f"Server {server_container} is running!")
         else:
             print("FAIL: Impossible to start the server.")
             sys.exit(1)
@@ -161,10 +162,14 @@ class Platform_manager:
             environment= env_vars,
             ports = {'3000/tcp': ('127.0.0.1', '3000')}
         )
-        exit_code, _ = self.client_container.exec_run(cmd = "npm install", workdir = "/client")
-        exit_code, _ = self.client_container.exec_run(cmd = "npm run dev", workdir = "/client", detach=True)
+        self.init_client(self.client_container)
 
-        print(f"Client {self.client_container} is running!")
+    def init_client(self, client_container):
+        exit_code, _ = client_container.exec_run(cmd = "npm install", workdir = "/client")
+        exit_code, _ = client_container.exec_run(cmd = "npm run dev", workdir = "/client", detach=True)
+
+        print(f"Client {client_container.short_id} is running!")
+
 
     def from_dic_to_env(self, object):
         env_list = []
@@ -203,7 +208,28 @@ class Platform_manager:
         for network in networks:
             network.remove()
             print(f"Removing network {network.name}")
-
+    
+    def reload_container(self, container_img):
+        print(f"Reloading the {container_img}")
+        if container_img == 'client':
+            img_name = IMAGE_NAME_CLIENT
+        elif container_img == 'server':
+            img_name = IMAGE_NAME_SERVER
+        elif container_img == 'db':
+            img_name = IMAGE_NAME_DB
+        containers = client.containers.list(
+            filters = {
+                "status": "running",
+                "ancestor": img_name
+            }
+        )
+        for container in containers:
+            container.restart()
+            if container_img == 'client':
+                self.init_client(container)
+            if container_img == 'server':
+                self.init_server(container)
+                
 
 
 if __name__ == '__main__':
@@ -213,16 +239,21 @@ if __name__ == '__main__':
     group.add_argument("-f", "--config_file",  action="store_true", help="Launch a custom scenario")
     parser.add_argument("-c", "--clean", action="store_true", help="stop and clean docker related components")
     parser.add_argument("name", type=str, help="the scenario/config name")
+    parser.add_argument("-r", "--reload", action="store_true", help="reload the targeted container [client | server | db]")
     args = parser.parse_args()
 
     if args.clean:
         manager = Platform_manager()
         manager.clean()
+    if args.reload:
+        manager = Platform_manager()
+        manager.reload_container(args.name)
     elif args.scenario:
         manager = Platform_manager(scenario_name=args.name)
+        manager.run()
     elif args.config_file:
         manager = Platform_manager(config_file=args.name)
+        manager.run()
     else:
         print(f"Usage: you must specified an option [-s | -f] before {args.name}.")
         sys.exit(1)
-    manager.run()
