@@ -25,6 +25,10 @@
         {
             "subnet": "10.0.0.0/29",
             "gateway": "10.0.0.1"
+        },
+        "bot":
+        {
+            "private_ipv4_address": "10.0.0.5"
         }
     }
 }

@@ -1,0 +1,52 @@
+{
+    "scenario":[
+    {
+        "client": {
+            "csp": "false",
+            "csp_directive": "img-src *",
+            "filtering": "false",
+            "x_frame_options": "false",
+            "running_port": 3000,
+            "mapping_port": 3000,
+            "private_ipv4_address": "10.0.0.2",
+            "samson": "test"
+        },
+        "server": 
+        {
+            "example_key": "example_value",
+            "app_port": 80,
+            "mapping_port": 8181,
+            "private_ipv4_address": "10.0.0.3"
+        },
+        "database":
+        {
+            "private_ipv4_address": "10.0.0.4"
+        },
+        "network":
+        {
+            "subnet": "10.0.0.0/29",
+            "gateway": "10.0.0.1"
+        }
+    },
+    {
+    "client": {
+        "csp": "false",
+        "csp_directive": "",
+        "filtering": "false",
+        "x_frame_options": "false",
+        "running_port": 3000,
+        "mapping_port": 3000,
+        "private_ipv4_address": "10.0.0.2"
+    }}
+    {
+        "client": {
+            "csp": "false",
+            "csp_directive": "img-src ",
+            "filtering": "false",
+            "x_frame_options": "false",
+            "running_port": 3000,
+            "mapping_port": 3000,
+            "private_ipv4_address": "10.0.0.2"
+        }
+    }
+]}

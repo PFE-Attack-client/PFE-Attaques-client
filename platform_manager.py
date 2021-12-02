@@ -11,10 +11,12 @@ PATH_PLATFORM = ABSOLUTE_PATH + "/platform/my-vuln-app/"
 PATH_DOCKERFILE_DB = PATH_PLATFORM + "bdd/"
 PATH_DOCKERFILE_CLIENT = PATH_PLATFORM + "client/"
 PATH_DOCKERFILE_SERVER = PATH_PLATFORM + "server/"
+PATH_DOCKERFILE_BOT = PATH_PLATFORM + "bot-victim/"
 PREFIX_IMAGE = "pfe_sm_lns"
 IMAGE_NAME_DB = PREFIX_IMAGE + "_database"
 IMAGE_NAME_SERVER = PREFIX_IMAGE + "_server"
 IMAGE_NAME_CLIENT = PREFIX_IMAGE + "_client"
+IMAGE_NAME_BOT = PREFIX_IMAGE + "_bot"
 SUFFIX_CONTAINER = str(os.getpid())
 
 client = docker.from_env()
@@ -41,6 +43,7 @@ class Platform_manager:
         self.launch_database()
         self.launch_server()
         self.launch_client()
+        self.launch_bot()
         self.create_networks()
         self.config_db(self.server_container)
         self.init_server(self.server_container)
@@ -56,6 +59,9 @@ class Platform_manager:
         print("-> Building Server image..")
         self.server_img, _ = client.images.build(path=PATH_DOCKERFILE_SERVER, tag=IMAGE_NAME_SERVER)
         print(self.server_img.short_id.split(":")[1])
+        print("-> Building the bot image..")
+        self.bot_img, _ = client.images.build(path=PATH_DOCKERFILE_BOT, tag=IMAGE_NAME_BOT)
+        print(self.bot_img.short_id.split(":")[1])
         print("-- Build -> done.")
 
     def create_networks(self):
@@ -78,6 +84,10 @@ class Platform_manager:
         self.app_network.connect(
             container=self.db_container.name,
             ipv4_address=self.config['scenario']['database']['private_ipv4_address'])
+        self.app_network.connect(
+            container=self.bot_container.name,
+            ipv4_address=self.config['scenario']['bot']['private_ipv4_address']
+        )
     
     def delete_networks(self):
         print("Deleting used network...")
@@ -170,6 +180,23 @@ class Platform_manager:
 
         print(f"Client {client_container.short_id} is running!")
 
+    def launch_bot(self):
+        print(f"The bot is launched!")
+
+        self.load_config_from_file(PATH_SCENARIOS +  "no_security" + ".json")
+        env_vars = self.from_dic_to_env(self.config['scenario']['bot'])
+        self.bot_container = client.containers.run(
+            image = IMAGE_NAME_BOT,
+            detach = True,
+            name= PREFIX_IMAGE + "_bot_" + SUFFIX_CONTAINER,
+            hostname = PREFIX_IMAGE + "_bot_" + SUFFIX_CONTAINER,
+            remove = True,
+            volumes = [PATH_DOCKERFILE_BOT + ":/bot"],
+            entrypoint = ["tail", "-f", "/dev/null"],
+            environment = env_vars
+        )
+    def ping_bot(self, url):
+        pass
 
     def from_dic_to_env(self, object):
         env_list = []
@@ -187,6 +214,7 @@ class Platform_manager:
         self.kill_container(IMAGE_NAME_CLIENT)
         self.kill_container(IMAGE_NAME_DB)
         self.kill_container(IMAGE_NAME_SERVER)
+        self.kill_container(IMAGE_NAME_BOT)
         self.kill_networks()
 
     def kill_container(self, image_name):
@@ -230,8 +258,6 @@ class Platform_manager:
             if container_img == 'server':
                 self.init_server(container)
                 
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
@@ -240,6 +266,8 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--clean", action="store_true", help="stop and clean docker related components")
     parser.add_argument("name", type=str, help="the scenario/config name")
     parser.add_argument("-r", "--reload", action="store_true", help="reload the targeted container [client | server | db]")
+    parser.add_argument("-b", "--bot", action="store_true", help="Ask the bot to go the a specific url. ex: --bot ")
+
     args = parser.parse_args()
 
     if args.clean:
@@ -248,6 +276,9 @@ if __name__ == '__main__':
     if args.reload:
         manager = Platform_manager()
         manager.reload_container(args.name)
+    elif args.bot:
+        manager = Platform_manager()
+        manager.launch_bot(args.name)
     elif args.scenario:
         manager = Platform_manager(scenario_name=args.name)
         manager.run()
