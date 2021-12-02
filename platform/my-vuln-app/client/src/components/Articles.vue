@@ -2,8 +2,9 @@
 import { onMounted, watch } from '@vue/runtime-core'
 import { reactive, ref } from 'vue'
 import axios from 'axios';
+import { ElMessage, ElMessageBox } from 'element-plus'
 
-const ip_serv = 'localhost:8181'
+const ip_serv = '10.0.0.3'
 
 const form = reactive({
     articles: [],
@@ -20,19 +21,8 @@ const form = reactive({
     subject: '',
     email: '',
     message: '',
+    leave_com: false,
 })
-
-// const com = reactive({
-//     display: false,
-//     id: [],
-//     author: {},
-//     content: [],
-//     temporal: [],
-//     date: [],
-//     time: [],
-//     title: [],
-//     link_art_id: [],
-// })
 
 const getArticles = () => {
     axios.get(`http://${ip_serv}/article`)
@@ -51,20 +41,6 @@ const getArticles = () => {
             axios.get(`http://${ip_serv}/article/${y}/comment`)
             .then(res => {
                 form.comment[i] = res.data.commentaries
-                // com.id[i] = []
-                // com.temporal[i] = []
-                // com.author[i] = []
-                // com.content[i] = []
-                // com.title[i] = []
-                // com.link_art_id[i] = []
-                // for (var j = 0; j < res.data.commentaries.length; j++){
-                //     com.id[i][j] = res.data.commentaries[j].id
-                //     com.temporal[i].push(res.data.commentaries[i].date)
-                //     com.author[i][j] = res.data.commentaries[i].author
-                //     com.content[i][j] = res.data.commentaries[i].content 
-                //     com.title[i][j] = res.data.commentaries[i].title
-                //     com.link_art_id[i][j] = res.data.commentaries[i].article_id
-                // }
             })
         } 
         if (form.art_id.length !== 0){
@@ -78,47 +54,33 @@ const getArticles = () => {
     })
 }
 
-const postComment = () => {
-    console.log(form.comment)
-    console.log(form.article)
-    const result = form.articles.find( article => article.title === form.article)
-    const l = form.comment[result.id-1].length + 1
-    const data = {        
-        'article_id': result.id,
-        'author': form.email,
-        'content' : form.message,
-        'date': "2021-11-30T21:42:55",
-        'id': l,
-        'title': form.subject,
+const postComment = (value) => {
+    if (localStorage.getItem('token') === null || localStorage.getItem('token') === 'null'){
+        ElMessageBox(
+        {
+            message: 'You must be logged in to post a comment...'})
     }
-    axios.post(`http://${ip_serv}/article/${result.id}/comment`, data)
-    .then(res=>{
-        console.log(res.data)
-    })
-}
-
-// const getComment = () => {
-//     com.display = true
-//     try {
-//         console.log(form.comment[0][1].title)
-//     } catch(r) {
-//         console.log('cela ne fonctionne pas')
-//     }
-
-// }
+    else{
+        const result = form.articles.find( article => article.id === value)
+        const args = {        
+            'article_id': result.id,
+            'author': form.email,
+            'content' : form.message,
+            'title': form.subject,
+        }
+        axios.post(`http://10.0.0.3/article/${result.id}/comment/`, args)
+        .then(res=>{
+            if(res.data.message === 'Your commentary has been saved.'){
+                getArticles()
+                form.email = ''
+                form.message = ''
+                form.subject = ''
+            }
+        })
+        .catch(e => console.log(e))
+    }
     
-// const increment = () => {
-//     count.value += 1
-//     console.log(count)
-// }
-
-// setInterval(function(){ 
-//     getComment()
-// }, 5000);
-
-// onMounted(() => {
-//   getArticles()
-// })
+}
 
 watch(
   () => {
@@ -144,7 +106,7 @@ watch(
         <el-row class="author">
             <el-col :span="2.2">
                 <div>
-                    Author:
+                    <b>Author: </b>
                 </div>
             </el-col>
             <el-col :span="3">
@@ -187,14 +149,14 @@ watch(
                 <el-row :span="1.5">
                     <el-col :span="1.8">
                         <div>
-                            Title:  <i>{{form.comment[index-1][jindex-1].title}}.</i>
+                            <b>Title: </b>  <i>{{form.comment[index-1][jindex-1].title}}.</i>
                         </div>
                     </el-col>
                 </el-row>
                 <el-row>
                     <el-col :span="1.8">
                         <div>
-                            Author: <i>{{form.comment[index-1][jindex-1].author}}.</i>
+                            <b>Author :</b> <i>{{form.comment[index-1][jindex-1].author}}.</i>
                         </div>
                     </el-col>
                 </el-row>
@@ -211,60 +173,56 @@ watch(
         </div>
         <br/>
         <br/>
-    </div>
-    <el-row class="comment">
-            <div>Leave a comment :</div>
-        </el-row>
-        <br/>
-        <el-row>
-            <div class="comments">
-                <el-form 
-                    ref="formulaire" 
-                    :model="form" 
-                    size="medium" 
-                    label-width="200px">
-                        <el-form-item class="textForm" label="your email" label-width="540px">
-                            <el-input v-model="form.email" placeholder="Enter your email"></el-input>
-                        </el-form-item>
-                        <el-form-item class="textForm" label="Name of the article" >
-                            <el-input v-model="form.article" placeholder="Name of the article you want ot comment"/>
-                        </el-form-item>
-                        <el-form-item class="textForm" label="Subject" >
-                            <el-input v-model="form.subject" placeholder="Enter your subject"/>
-                        </el-form-item>
-                        <el-form-item  class="textForm" label="Your message" prop="desc">
-                            <el-input v-model="form.message" type="textarea" placeholder="Write your message"></el-input>
-                        </el-form-item>
-                </el-form>
+            <el-row class="comment">
+                <div><b>Leave a comment :</b></div>
+            </el-row>
+            <br/>
+            <div>
+                <el-row>
+                    <div class="comments">
+                        <el-form 
+                            ref="formulaire" 
+                            :model="form" 
+                            size="medium" 
+                            label-width="200px">
+                                <el-form-item class="textForm" label="EMAIL:" label-width="540px">
+                                    <el-input v-model="form.email" placeholder="Enter your email"></el-input>
+                                </el-form-item>
+                                <el-form-item class="textForm" label="SUBJECT: " >
+                                    <el-input v-model="form.subject" placeholder="Enter your subject"/>
+                                </el-form-item>
+                                <el-form-item  class="textForm" label="MESSAGE:" prop="desc">
+                                    <el-input v-model="form.message" type="textarea" placeholder="Write your message"></el-input>
+                                </el-form-item>
+                        </el-form>
+                    </div>
+                </el-row>
+                <div>
+                    <el-button @click="postComment(index)" class="post">Post comment</el-button>
+                </div>
             </div>
-    </el-row>
-    <div>
-        <el-button @click="postComment" class="post">Post comment</el-button>
+            
     </div>
+       
 </div>
 </template>
 
 <style>
-.test{
-    color:blue;
-    left: 50px;
-    top: 50px;
-}
-
 .title{
+    font-size: 20px;
     text-align: left;
     font-family: Bradley Hand, cursive;
 }
 
 .author{
     text-align: left;
-    font-size: 16px;
+    font-size: 22px;
     font-family: Bradley Hand, cursive;
 }
 
 .comment{
      font-family: Bradley Hand, cursive;
-     font-size: 20px;
+     font-size: 22px;
      font-family: Bradley Hand, cursive;
 }
 
@@ -275,11 +233,13 @@ watch(
 .post{
     margin-top: 2.5em;
     margin-bottom: 2.5em;
+    color: white;
+    background-color: #545c64;
 }
 
 .textForm{
     font-family: Bradley Hand, cursive;
-    font-size: 12px;
+    font-size: 18px;
     position: left;
 }
 </style>

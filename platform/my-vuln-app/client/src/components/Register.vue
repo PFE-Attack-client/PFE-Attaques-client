@@ -7,36 +7,44 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 const ip_serv = '10.0.0.3'
 
-const log = reactive({
+const reg = reactive({
+    username: '',
     email: '',
     password: '',
+    confirm_password: '',
     access: false,
 })
 
 const props = defineProps({
-  is_log: {
-    type: Boolean,
-    required: true,
-  },
-  is_click: {
+  want_register: {
       type: Boolean,
       required: true,
   }
 })
 
-const login = () => {
-    const data = {
-        "email": log.email,
-        "password": log.password
+const register = () => {
+    if(reg.password !== reg.confirm_password){
+        ElMessageBox(
+        {
+            message: 'Wrong password match. Try again'})
     }
-    axios.post(`http://${ip_serv}/auth/login`, data)
+    if(reg.confirm_password === ''){
+        ElMessageBox(
+        {
+            message: 'Confirm your password'})
+    }
+    const data = {
+        "username": reg.username,
+        "email": reg.email,
+        "password": reg.password
+    }
+    axios.post(`http://${ip_serv}/user/signup`, data)
     .then(res =>{
-        if(res.data.message === 'Successfully logged in.'){
-            localStorage.setItem('token', res.data.Authorization)
+        if(res.data.message === "Successfully registered."){
             ElMessageBox(
         {
-            message: 'Successfully logged in. Welcome !'})
-            log.access = true
+            message: 'Successfully registered !!'})
+        reg.access = true
         }
     })
 
@@ -46,11 +54,11 @@ const login = () => {
 
 <template>
 <div>
-    <div class="contain2" v-if="log.access === false">
+    <div class="contain3" v-if="reg.access === false">
             <div>
                 <el-header class="header">
                     <br/>
-                    <div class="welcome">Please connect to the blog !</div>
+                    <div class="welcome">Please register to the blog !</div>
                 </el-header>
                 <el-image
                     style="width: 1000px; height: 500px; margin-bottom: 1em;"
@@ -63,22 +71,28 @@ const login = () => {
                         <div>
                             <el-card class="box-card">
                                 <div>
-                                <h1>Login</h1>
+                                <h1>Register</h1>
                                     <div>
                                         <el-form
-                                        ref="login"
+                                        ref="register"
                                         label-position="top"
                                         label-width="100px"
-                                        :model="log"
+                                        :model="reg"
                                         class='form'>
+                                            <el-form-item label="Username">
+                                                <el-input v-model="reg.username" placeholder="Enter your username"/>
+                                            </el-form-item>
                                             <el-form-item label="Email">
-                                                <el-input v-model="log.email" placeholder="Enter your email"/>
+                                                <el-input v-model="reg.email" placeholder="Enter your email"/>
                                             </el-form-item>
                                             <el-form-item label="Password">
-                                                <el-input v-model="log.password" placeholder="Please input password" show-password />
+                                                <el-input v-model="reg.password" placeholder="Please input password" show-password />
+                                            </el-form-item>
+                                            <el-form-item label="Confirm password">
+                                                <el-input v-model="reg.confirm_password" placeholder="Please confirm password" show-password />
                                             </el-form-item>
                                             <el-form-item>
-                                                <el-button type="info" @click="login">Submit</el-button>
+                                                <el-button type="info" @click="register">Submit</el-button>
                                             </el-form-item>
                                         </el-form>
                                     </div>
@@ -90,15 +104,16 @@ const login = () => {
                 </el-container>
             </div>
         </div>
-    <div v-if="log.access === true">
+    <div v-if="reg.access === true">
         <App/>
     </div>
 </div>    
 </template>
 
 <style>
-.contain2{
+.contain3{
     width: 1000px;
+    height: 900px;
     margin-left: auto;
     margin-right: auto;
     margin-top: 4.5em;
@@ -117,7 +132,7 @@ const login = () => {
   top: 21%;
   left: 38%;
   width: 450px;
-  height: 450px;
+  height: 600px;
   background-color: #dce8e0;
 }
 

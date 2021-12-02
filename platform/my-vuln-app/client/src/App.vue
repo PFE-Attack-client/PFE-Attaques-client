@@ -3,6 +3,7 @@ import { onMounted, watch } from '@vue/runtime-core'
 import { reactive } from '@vue/reactivity'
 import Home from './components/Home.vue'
 import Login from './components/Login.vue'
+import Register from './components/Register.vue'
 
 // const props = defineProps({
 //   success: {
@@ -13,6 +14,7 @@ import Login from './components/Login.vue'
 
 const v = reactive({
     is_click: false,
+    want_register: false,
     is_log: false,
 })
 
@@ -36,6 +38,10 @@ const log = () =>{
     }
 }
 
+const register = () => {
+    v.want_register = true
+}
+
 onMounted(() => {
   isLogged()
 })
@@ -50,7 +56,10 @@ onMounted(() => {
             :is_click="v.is_click"
         />
     </div>
-    <div v-if="v.is_click === false">
+    <div v-if="v.want_register === true">
+        <Register :want_register="v.want_register"/>
+    </div>
+    <div v-if="v.is_click === false && v.want_register === false">
     <div class="contain">
             <div>
                 <div class="connect">
@@ -60,12 +69,14 @@ onMounted(() => {
                                 Log in
                             </el-button>
                         </div>
+                        <div v-if="v.is_log === false" class="register">
+                            <el-button type="info" round @click="register">
+                                Register
+                            </el-button>
+                        </div>
                         <div v-if="v.is_log === true">
                             <el-col span="3">
                                 <el-button type="danger" round @click="log">Log out</el-button>
-                            </el-col>
-                            <el-col span="2">
-                                <div class="user">Welcome {user} !</div>
                             </el-col>
                         </div>
                     </el-col>
@@ -108,6 +119,11 @@ onMounted(() => {
 .connect{
     width: 890px;
     text-align: right;
+}
+
+.register{
+    margin-top:10px;
+    padding-left: 49.7em;
 }
 
 .connect2{
