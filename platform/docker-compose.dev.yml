@@ -30,7 +30,7 @@ services:
     ports:
      - "8080:80"
     volumes:
-    - ./my-vuln-app/server:/client
+    - ./my-vuln-app/client:/client
     depends_on:
       - server
     entrypoint: ["tail", "-f", "/dev/null"]
