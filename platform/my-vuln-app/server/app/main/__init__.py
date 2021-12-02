@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 
 from .config.config import config_by_name
 from .config.db import db_sqlAlchemy as db
+from flask_cors import CORS
 
 migrate = Migrate()
 flask_bcrypt = Bcrypt()
@@ -22,4 +23,5 @@ def create_app(config_name):
     db.init_app(app)
     migrate.init_app(app, db)
     flask_bcrypt.init_app(app)
+    CORS(app)
     return app
