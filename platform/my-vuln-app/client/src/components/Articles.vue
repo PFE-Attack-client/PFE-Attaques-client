@@ -173,7 +173,7 @@ watch(
         </div>
         <br/>
         <br/>
-            <el-row class="comment">
+            <el-row class="comment" id="trigger-bot">
                 <div><b>Leave a comment :</b></div>
             </el-row>
             <br/>

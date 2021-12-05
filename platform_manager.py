@@ -195,8 +195,21 @@ class Platform_manager:
             entrypoint = ["tail", "-f", "/dev/null"],
             environment = env_vars
         )
-    def ping_bot(self, url):
-        pass
+
+    def trigger_bot(self, url):
+        print(f"the bot is navigating to {url}")
+        containers = client.containers.list(
+            filters = {
+                "status": "running",
+                "ancestor": IMAGE_NAME_BOT
+            }
+        )
+        for container in containers:
+            exit_code, _ = container.exec_run(
+                cmd = f"python main.py {url}",
+                workdir = "/bot"
+            )
+            print(_)
 
     def from_dic_to_env(self, object):
         env_list = []
@@ -278,7 +291,7 @@ if __name__ == '__main__':
         manager.reload_container(args.name)
     elif args.bot:
         manager = Platform_manager()
-        manager.launch_bot(args.name)
+        manager.trigger_bot(args.name)
     elif args.scenario:
         manager = Platform_manager(scenario_name=args.name)
         manager.run()

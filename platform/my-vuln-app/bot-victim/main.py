@@ -39,16 +39,17 @@ class BotVictim:
         self.token = str(json_data['Authorization'])
     
     def go_to_the_url(self):
-        driver.get("http://10.0.0.2:3000/articles")
+        driver.get(self.url_to_connect)
         cookies_dict = {
             "name": 'wowo',
             'value': self.token
         }
         driver.add_cookie(cookies_dict)
-        driver.get("http://10.0.0.2:3000/articles")
+        driver.get(self.url_to_connect)
         elem = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "test-id"))
+            EC.presence_of_element_located((By.ID, "trigger-bot"))
         )
+        print(driver.page_source)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
