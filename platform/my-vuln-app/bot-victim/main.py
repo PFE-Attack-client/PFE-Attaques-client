@@ -5,12 +5,16 @@ import sys
 import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 chrome_options = Options()
-#chrome_options.add_argument("--disable-extensions")
-
+chrome_options.add_argument("--disable-extensions")
+chrome_options.add_argument('--no-sandbox')
 #chrome_options.add_argument("--disable-gpu")
 
 chrome_options.add_argument("--headless")
+
 driver = webdriver.Chrome(options=chrome_options)
 
 class BotVictim:
@@ -35,12 +39,16 @@ class BotVictim:
         self.token = str(json_data['Authorization'])
     
     def go_to_the_url(self):
-        driver.get("https://google.com")
+        driver.get("http://10.0.0.2:3000/articles")
         cookies_dict = {
             "name": 'wowo',
             'value': self.token
         }
-        print(driver.page_source.encode("utf-8"))
+        driver.add_cookie(cookies_dict)
+        driver.get("http://10.0.0.2:3000/articles")
+        elem = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "test-id"))
+        )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
