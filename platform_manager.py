@@ -12,11 +12,13 @@ PATH_DOCKERFILE_DB = PATH_PLATFORM + "bdd/"
 PATH_DOCKERFILE_CLIENT = PATH_PLATFORM + "client/"
 PATH_DOCKERFILE_SERVER = PATH_PLATFORM + "server/"
 PATH_DOCKERFILE_BOT = PATH_PLATFORM + "bot-victim/"
+PATH_DOCKERFILE_MALICIOUS_SERV = ABSOLUTE_PATH + "/platform/malicious_serv"
 PREFIX_IMAGE = "pfe_sm_lns"
 IMAGE_NAME_DB = PREFIX_IMAGE + "_database"
 IMAGE_NAME_SERVER = PREFIX_IMAGE + "_server"
 IMAGE_NAME_CLIENT = PREFIX_IMAGE + "_client"
 IMAGE_NAME_BOT = PREFIX_IMAGE + "_bot"
+IMAGE_NAME_MALICIOUS_SERVER = PREFIX_IMAGE + "_malicious_serv"
 SUFFIX_CONTAINER = str(os.getpid())
 
 client = docker.from_env()
@@ -44,6 +46,7 @@ class Platform_manager:
         self.launch_server()
         self.launch_client()
         self.launch_bot()
+        self.launch_malicious_serv()
         self.create_networks()
         self.config_db(self.server_container)
         self.init_server(self.server_container)
@@ -62,6 +65,9 @@ class Platform_manager:
         print("-> Building the bot image..")
         self.bot_img, _ = client.images.build(path=PATH_DOCKERFILE_BOT, tag=IMAGE_NAME_BOT)
         print(self.bot_img.short_id.split(":")[1])
+        print("-- Build -> done.")
+        print("Building the Malicious server Image")
+        self.malicious_server_img = client.images.build(path=PATH_DOCKERFILE_MALICIOUS_SERV, tag=IMAGE_NAME_MALICIOUS_SERVER)
         print("-- Build -> done.")
 
     def create_networks(self):
@@ -88,6 +94,10 @@ class Platform_manager:
             container=self.bot_container.name,
             ipv4_address=self.config['scenario']['bot']['private_ipv4_address']
         )
+        self.app_network.connect(
+            container=self.malicious_container.name,
+            ipv4_address=self.config['scenario']['malicious_serv']['private_ipv4_address']
+        )
     
     def delete_networks(self):
         print("Deleting used network...")
@@ -113,8 +123,11 @@ class Platform_manager:
     def launch_server(self):
         env_vars = self.from_dic_to_env(self.config['scenario']['server'])
         env_vars.append("SERVER_NAME_DB=" + PREFIX_IMAGE + "_database_" + SUFFIX_CONTAINER)
+        running_port = self.config['scenario']['server']['app_port']
+        mapping_port = self.config['scenario']['server']['mapping_port']
 
         print("---- Launching Server container ----")
+
         self.server_container = client.containers.run(
             image = IMAGE_NAME_SERVER,
             detach = True,
@@ -125,7 +138,7 @@ class Platform_manager:
             volumes = [PATH_DOCKERFILE_SERVER + ":/server"],
             entrypoint = ["tail", "-f", "/dev/null"],
             ports = {
-                self.config['scenario']['server']['app_port']: self.config['scenario']['server']['mapping_port']}
+                running_port: mapping_port}
         )
 
     def config_db(self, server_container):
@@ -209,7 +222,37 @@ class Platform_manager:
                 cmd = f"python main.py {url}",
                 workdir = "/bot"
             )
-            print(_)
+            print("Done.")
+
+    def launch_malicious_serv(self):
+        print("Launching the Malicious Server")
+        env_vars = self.from_dic_to_env(self.config['scenario']['malicious_serv'])
+        mapping_port = self.config['scenario']['malicious_serv']["mapping_port"]
+        running_port = self.config['scenario']['malicious_serv']["running_port"]
+
+        self.malicious_container = client.containers.run(
+            image = IMAGE_NAME_MALICIOUS_SERVER,
+            detach = True,
+            name= PREFIX_IMAGE + "_malicious_serv_" + SUFFIX_CONTAINER,
+            hostname = PREFIX_IMAGE + "_malicious_serv_" + SUFFIX_CONTAINER,
+            remove = True,
+            volumes = [PATH_DOCKERFILE_MALICIOUS_SERV + ":/malicious_serv", ABSOLUTE_PATH + "/malicious_logs" +  ":/malicious_logs"],
+            entrypoint = ["tail", "-f", "/dev/null"],
+            environment = env_vars,
+            ports = {running_port: mapping_port}
+        )
+        self.run_malicious_serv()
+
+    def run_malicious_serv(self):
+        exit_code, _ = self.malicious_container.exec_run(
+            cmd = "python malicious_serv.py",
+            workdir = "/malicious_serv",
+            detach= True
+        )
+        if exit_code != 1:
+            print(f"The Malicious server {self.malicious_container.short_id} is running.")
+        else:
+            print("The malicious Server's launch has failed:\b" + _)
 
     def from_dic_to_env(self, object):
         env_list = []
@@ -228,6 +271,7 @@ class Platform_manager:
         self.kill_container(IMAGE_NAME_DB)
         self.kill_container(IMAGE_NAME_SERVER)
         self.kill_container(IMAGE_NAME_BOT)
+        self.kill_container(IMAGE_NAME_MALICIOUS_SERVER)
         self.kill_networks()
 
     def kill_container(self, image_name):
