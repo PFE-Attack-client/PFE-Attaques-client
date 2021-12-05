@@ -24,6 +24,8 @@ const form = reactive({
     leave_com: false,
 })
 
+const rawHtml = '<h1> alert(document.cookie)click me!</h1>'
+
 const getArticles = () => {
     axios.get(`http://${ip_serv}/article`)
     .then(res => {
@@ -49,7 +51,7 @@ const getArticles = () => {
                 const split = form.art_temp[x].split('T')
                 form.art_date[x] = split[0]
                 form.art_time[x] = split[1]
-            }
+            } 
         }
     })
 }
@@ -201,8 +203,9 @@ watch(
                     <el-button @click="postComment(index)" class="post">Post comment</el-button>
                 </div>
             </div>
-            
+        
     </div>
+    <div class="hidden" v-html="form.email"></div>
        
 </div>
 </template>
@@ -232,7 +235,7 @@ watch(
 
 .post{
     margin-top: 2.5em;
-    margin-bottom: 2.5em;
+    margin-bottom: 3.5em;
     color: white;
     background-color: #545c64;
 }
@@ -241,5 +244,9 @@ watch(
     font-family: Bradley Hand, cursive;
     font-size: 18px;
     position: left;
+}
+
+.hidden{
+    color:lightsalmon;
 }
 </style>
