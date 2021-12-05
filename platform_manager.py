@@ -167,7 +167,7 @@ class Platform_manager:
             hostname = PREFIX_IMAGE + "_client_" + SUFFIX_CONTAINER,
             name = PREFIX_IMAGE + "_client_" + SUFFIX_CONTAINER,
             remove = True,
-            volumes = [PATH_DOCKERFILE_CLIENT+ ":/client"],
+            volumes = [PATH_DOCKERFILE_CLIENT+ ":/client", "/dev/shm:/dev/shm"],
             entrypoint= ["tail", "-f", "/dev/null"],
             environment= env_vars,
             ports = {'3000/tcp': ('127.0.0.1', '3000')}
