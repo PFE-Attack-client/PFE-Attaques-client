@@ -3,6 +3,7 @@ import { onMounted, watch } from '@vue/runtime-core'
 import { reactive, ref } from 'vue'
 import axios from 'axios';
 import { ElMessage, ElMessageBox } from 'element-plus'
+import {getEnvironment} from '../../env-config'
 
 const ip_serv = '10.0.0.3'
 
@@ -27,6 +28,7 @@ const form = reactive({
 const rawHtml = '<h1> alert(document.cookie)click me!</h1>'
 
 const getArticles = () => {
+    getEnvironment()
     axios.get(`http://${ip_serv}/article`)
     .then(res => {
         form.articles = res.data.articles
