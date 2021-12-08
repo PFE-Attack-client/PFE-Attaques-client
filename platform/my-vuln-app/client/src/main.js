@@ -47,20 +47,3 @@ const app = createApp(App)
 app.use(ElementPlus)
 app.use(router)
 app.mount('#app')
-
-
-// app.config.compilerOptions.isCustomElement = tag => tag.startsWith('router')
-
-// const routes = [
-//     {
-//       path: "/home",
-//       name: "Home",
-//       component: Home,
-//     },
-//   ];
-
-//   const router = new VueRouter({
-//     routes,
-//   });
-
-//   export default {router};

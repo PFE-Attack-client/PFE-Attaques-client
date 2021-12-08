@@ -5,13 +5,6 @@ import Home from './components/Home.vue'
 import Login from './components/Login.vue'
 import Register from './components/Register.vue'
 
-// const props = defineProps({
-//   success: {
-//     type: Boolean,
-//     required: true,
-//   },
-// })
-
 const v = reactive({
     is_click: false,
     want_register: false,
@@ -105,8 +98,6 @@ onMounted(() => {
                 </el-container>
             </div>
         </div>
-    <!-- <Home/> -->
-    <!-- <Home :msg="v.msg" /> -->
     </div>
 </div>
 </template>
@@ -132,13 +123,11 @@ onMounted(() => {
 }
 
 .welcome{
-    /* font-family: Luminari, fantasy; */
     margin-bottom: 3em;
     margin-top: 10px;
     color: lavenderblush;
     text-align:center;
     font-size: 40px;
-    /* text-align:center ; */
 }
 .nav{
     text-align: center;
@@ -180,12 +169,4 @@ onMounted(() => {
     background-color:lightsalmon;
 }
 
-/* #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-} */
 </style>

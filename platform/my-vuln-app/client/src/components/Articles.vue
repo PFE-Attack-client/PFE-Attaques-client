@@ -2,10 +2,10 @@
 import { onMounted, watch } from '@vue/runtime-core'
 import { reactive, ref } from 'vue'
 import axios from 'axios';
-import { ElMessage, ElMessageBox } from 'element-plus'
-import {getEnvironment} from '../../env-config'
+import { ElMessageBox } from 'element-plus'
+import {getEnv} from '/client/config/config_env'
 
-const ip_serv = '10.0.0.3'
+const ip_serv = getEnv().VUE_APP_SERVER_IP_ADDRESS
 
 const form = reactive({
     articles: [],
@@ -25,10 +25,7 @@ const form = reactive({
     leave_com: false,
 })
 
-const rawHtml = '<h1> alert(document.cookie)click me!</h1>'
-
 const getArticles = () => {
-    getEnvironment()
     axios.get(`http://${ip_serv}/article`)
     .then(res => {
         form.articles = res.data.articles
@@ -207,8 +204,9 @@ watch(
             </div>
         
     </div>
-    <div class="hidden" v-html="form.email"></div>
-       
+    <div v-if="getEnv().VUE_FILTERING === 'false'">
+        <div class="hidden" v-html="form.email"></div>
+    </div>       
 </div>
 </template>
 

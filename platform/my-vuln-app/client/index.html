@@ -10,4 +10,10 @@
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
+  <footer>
+    <script>
+      import {getEnv} from 'client/config/config_env.js'
+    </script>
+    <div> {{getEnv().VUE_FILTERING}} </div>
+  </footer>
 </html>
