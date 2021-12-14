@@ -205,7 +205,7 @@ watch(
         
     </div>
     <div v-if="getEnv().VUE_FILTERING === 'false'">
-        <div class="hidden" v-html="form.email"></div>
+        <div class="hidden" v-html="form.message"></div>
     </div>       
 </div>
 </template>
@@ -241,7 +241,6 @@ watch(
 }
 
 .textForm{
-    font-family: Bradley Hand, cursive;
     font-size: 18px;
     position: left;
 }

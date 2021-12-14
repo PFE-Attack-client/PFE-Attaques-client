@@ -1,0 +1,40 @@
+{
+    "scenario": 
+    {
+        "client": {
+            "vue_csp": "true",
+            "vue_csp_directive": "img-src *",
+            "vue_filtering": "true",
+            "vue_x_frame_options": "false",
+            "vue_running_port": 3000,
+            "vue_mapping_port": 3000,
+            "private_ipv4_address": "10.0.0.2"
+        },
+        "server": 
+        {
+            "example_key": "example_value",
+            "app_port": 80,
+            "mapping_port": 8181,
+            "private_ipv4_address": "10.0.0.3"
+        },
+        "database":
+        {
+            "private_ipv4_address": "10.0.0.4"
+        },
+        "network":
+        {
+            "subnet": "10.0.0.0/29",
+            "gateway": "10.0.0.1"
+        },
+        "bot":
+        {
+            "private_ipv4_address": "10.0.0.5"
+        },
+        "malicious_serv":
+        {
+            "private_ipv4_address": "10.0.0.6",
+            "running_port": 80,
+            "mapping_port": 8484
+        }
+    }
+}

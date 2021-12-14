@@ -1,9 +1,9 @@
 export const getEnv = () => {
-    const VUE_CSP = "false"
+    const VUE_CSP = "true"
     const VUE_MAPPING_PORT = "3000"
     const VUE_RUNNING_PORT = "3000"
     const VUE_X_FRAME_OPTIONS = "false"
-    const VUE_FILTERING = "false"
+    const VUE_FILTERING = "true"
     const VUE_APP_SERVER_IP_ADDRESS = "10.0.0.3"
     const VUE_CSP_DIRECTIVE = "img-src *"
     return {
