@@ -2,9 +2,9 @@
     "scenario": 
     {
         "client": {
-            "vue_csp": "false",
+            "vue_csp": "true",
             "vue_csp_directive": "img-src *",
-            "vue_filtering": "false",
+            "vue_filtering": "true",
             "vue_x_frame_options": "false",
             "vue_running_port": 3000,
             "vue_mapping_port": 3000,
