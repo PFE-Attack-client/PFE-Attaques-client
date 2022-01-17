@@ -1,7 +1,7 @@
 from subprocess import check_output
 import os.path
 
-## Function that adds CSP Headers in "index.html"
+## Function that adds CSP Headers in index.html file
 def indexHeaders(params):
     index = open('../index.html')
     lines = index.readlines()
@@ -12,7 +12,8 @@ def indexHeaders(params):
         if line == '  <head>\n':
             index.write('    <meta\n')
             index.write('      http-equiv="Content-Security-Policy"\n')
-            index.write('      content="script-src \'sefl\'; ' + params + '"/>\n')
+            index.write('      content="' + params + '"/>\n')
+    index.close()
 
 ## Create a new empty config_env.js file 
 if os.path.isfile('config_env.js') == True:
@@ -57,4 +58,3 @@ conf.write(ind + '}\n')
 conf.write('}')
     
 conf.close()
-index.close()

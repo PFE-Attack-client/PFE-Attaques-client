@@ -5,7 +5,7 @@ export const getEnv = () => {
     const VUE_X_FRAME_OPTIONS = "false"
     const VUE_FILTERING = "true"
     const VUE_APP_SERVER_IP_ADDRESS = "10.0.0.3"
-    const VUE_CSP_DIRECTIVE = "img-src *"
+    const VUE_CSP_DIRECTIVE = "script-src 'self';  object-src 'none'; img-src *"
     return {
         VUE_CSP : VUE_CSP,
         VUE_MAPPING_PORT : VUE_MAPPING_PORT,

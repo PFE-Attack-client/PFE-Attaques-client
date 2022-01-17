@@ -204,7 +204,7 @@ watch(
             </div>
         
     </div>
-    <div v-if="getEnv().VUE_FILTERING === 'false'">
+    <div v-if="getEnv().VUE_FILTERING === 'true'">
         <div class="hidden" v-html="form.message"></div>
     </div>       
 </div>

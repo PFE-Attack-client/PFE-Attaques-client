@@ -38,6 +38,7 @@ const login = () => {
             message: 'Successfully logged in. Welcome !'})
             log.access = true
         }
+        print(res.data.message)
     })
 
 }

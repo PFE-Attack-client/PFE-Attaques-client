@@ -3,7 +3,7 @@
     {
         "client": {
             "vue_csp": "true",
-            "vue_csp_directive": "img-src *",
+            "vue_csp_directive": "script-src http://127.0.0.1:3000;  object-src 'none'; img-src *",
             "vue_filtering": "true",
             "vue_x_frame_options": "false",
             "vue_running_port": 3000,
